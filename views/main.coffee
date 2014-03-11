@@ -150,6 +150,58 @@ parse = (input) ->
         " near '#{input.substr(lookahead.from)}'"
     result
 
+  condition = ->
+    result = expression()
+    if lookahead and lookahead.type is "odd"
+      match "odd"
+      right = expression()
+      result =
+        type: "odd"
+        value: right
+    if lookahead and lookahead.type is "="
+      match "="
+      right = expression()
+      result =
+        type: "="
+        left: result
+        right: right
+    if lookahead and lookahead.type is "#"
+      match "#"
+      right = expression()
+      result =
+        type: "#"
+        left: result
+        right: right
+    if lookahead and lookahead.type is "<"
+      match "<"
+      right = expression()
+      result =
+        type: "<"
+        left: result
+        right: right
+    if lookahead and lookahead.type is "<="
+      match "<="
+      right = expression()
+      result =
+        type: "<="
+        left: result
+        right: right
+    if lookahead and lookahead.type is ">"
+      match ">"
+      right = expression()
+      result =
+        type: ">"
+        left: result
+        right: right
+    if lookahead and lookahead.type is ">="
+      match ">="
+      right = expression()
+      result =
+        type: ">="
+        left: result
+        right: right
+    result
+
   expression = ->
     result = term()
     if lookahead and lookahead.type is "+"
