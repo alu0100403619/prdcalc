@@ -117,6 +117,7 @@ parse = (input) ->
             input.substr(lookahead.from) + "'"
     return
 
+  #STATEMENTS-------------------------------------------------------------
   statements = ->
     result = [statement()]
     while lookahead and lookahead.type is ";"
@@ -124,6 +125,7 @@ parse = (input) ->
       result.push statement()
     (if result.length is 1 then result[0] else result)
 
+  #STATEMENT-------------------------------------------------------------
   statement = ->
     result = null
     if lookahead and lookahead.type is "ID"
@@ -144,12 +146,46 @@ parse = (input) ->
       result =
         type: "P"
         value: right
+    else if lookahead and lookahead.type is "call"
+      match "call"
+      right = statement() #No se si está bien. Es para poner el valor de ID en right
+      match "ID"
+      result = 
+        type: "call"
+        right: right
+    else if lookahead and lookahead.type is "begin"
+      match "begin"
+      right = statement()
+      match ";"
+      match "end"
+      result = 
+        type: "begin"
+        right: right
+    else if lookahead and lookahead.type is "if" #condition en vez de if
+      match "if"
+      right = condition()
+      match "then"
+      left = statement()
+      result = 
+        type: "begin"
+        right: right
+        left: left
+    else if lookahead and lookahead.type is "while"
+      match "while"
+      right = condition()
+      match "do"
+      left = statement()
+      result = 
+        type: "while"
+        right: right
+        left: left
     else # Error!
       throw "Syntax Error. Expected identifier but found " + 
         (if lookahead then lookahead.value else "end of input") + 
         " near '#{input.substr(lookahead.from)}'"
     result
 
+  #CONDITION-------------------------------------------------------------
   condition = ->
     result = expression()
     if lookahead and lookahead.type is "odd"
@@ -202,6 +238,7 @@ parse = (input) ->
         right: right
     result
 
+  #EXPRESSION-------------------------------------------------------------
   expression = ->
     result = term()
     if lookahead and lookahead.type is "+"
@@ -220,6 +257,7 @@ parse = (input) ->
         right: right
     result
 
+  #TERM-------------------------------------------------------------
   term = ->
     result = factor()
     if lookahead and lookahead.type is "*"
@@ -238,6 +276,7 @@ parse = (input) ->
         right: right
     result
 
+  #FACTOR-------------------------------------------------------------
   factor = ->
     result = null
     if lookahead.type is "NUM"
