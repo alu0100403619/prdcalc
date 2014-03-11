@@ -17,6 +17,6 @@ Comprueba su funcionamiento en
 [Pdrcalc en Heroku Jorge](https://drive.google.com/folderview?id=0ByNr-nNEgfHRMDBmRKJNNlf2c00&usp=sharing)
 
 Comprueba su funcionamiento en 
-[Pdrcalc en Heroku Gonzalo](https://drive.google.com/folderview?id=0ByNr-nNEgfHRMDBmRKJNNlf2c00&usp=sharing)
+[Pdrcalc en Heroku Gonzalo](http://prdcalc.herokuapp.com/)
 
 Fecha: 14/03/2014
