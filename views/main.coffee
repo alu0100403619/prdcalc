@@ -125,6 +125,8 @@ parse = (input) ->
       result.push statement()
     (if result.length is 1 then result[0] else result)
 
+  #BLOCK-------------------------------------------------------------
+  
   #STATEMENT-------------------------------------------------------------
   statement = ->
     result = null
@@ -146,14 +148,14 @@ parse = (input) ->
       result =
         type: "P"
         value: right
-    else if lookahead and lookahead.type is "call"
+    else if lookahead and lookahead.type is "call"  #NO FUNCIONA
       match "call"
       right = statement() #No se si está bien. Es para poner el valor de ID en right
       match "ID"
       result = 
         type: "call"
         right: right
-    else if lookahead and lookahead.type is "begin"
+    else if lookahead and lookahead.type is "begin"  #NO FUNCIONA
       match "begin"
       right = statement()
       match ";"
@@ -187,7 +189,7 @@ parse = (input) ->
 
   #CONDITION-------------------------------------------------------------
   condition = ->
-    result = expression()
+    result = expression() #NO FUNCIONA
     if lookahead and lookahead.type is "odd"
       match "odd"
       right = expression()
@@ -291,7 +293,7 @@ parse = (input) ->
         value: lookahead.value
 
       match "ID"
-    else if lookahead.type is "("
+    else if lookahead.type is "(" #NO FUNCIONA (3*5) pero si a = (3*5)
       match "("
       result = expression()
       match ")"
