@@ -35,6 +35,7 @@ String::tokens = ->
   ONELINECOMMENT = /\/\/.*/g
   MULTIPLELINECOMMENT = /\/[*](.|\n)*?[*]\//g
   ONECHAROPERATORS = /([-+*\/=()&|;:,<>{}[\]])/g
+  COMPARISSON = /if\s*\(.*\)\s*then/ig #CREAR LA REGEXP
   tokens = [
     WHITES
     ID
@@ -43,8 +44,11 @@ String::tokens = ->
     ONELINECOMMENT
     MULTIPLELINECOMMENT
     ONECHAROPERATORS
+    COMPARISSON
   ]
   RESERVED_WORD = p: "P"
+				  if: "if"
+				  then: "then"
   
   # Make a token object.
   make = (type, value) ->
@@ -163,13 +167,13 @@ parse = (input) ->
       result = 
         type: "begin"
         right: right
-    else if lookahead and lookahead.type is "if" #condition en vez de if
+    else if lookahead and lookahead.type is "if" #ARREGLADO
       match "if"
       right = condition()
       match "then"
       left = statement()
       result = 
-        type: "begin"
+        type: "if"
         right: right
         left: left
     else if lookahead and lookahead.type is "while"
