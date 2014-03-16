@@ -42,6 +42,7 @@ String::tokens = ->
     p: "P"
     "if": "IF"
     then: "THEN"
+    while: "WHILE"
   
   # Make a token object.
   make = (type, value) ->
@@ -249,7 +250,7 @@ parse = (input) ->
         value: lookahead.value
 
       match "ID"
-    else if lookahead.type is "("
+    else if lookahead.type is "(" #NO FUNCIONA (3*5) pero si a = (3*5)
       match "("
       result = expression()
       match ")"
