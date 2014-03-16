@@ -137,7 +137,6 @@ parse = (input) ->
       left =
         type: "ID"
         value: lookahead.value
-
       match "ID"
       match "="
       right = expression()
@@ -151,14 +150,13 @@ parse = (input) ->
       result =
         type: "P"
         value: right
-    else if lookahead and lookahead.type is "CALL" #NO FUNCIONA
+    else if lookahead and lookahead.type is "CALL"
       match "CALL"
-      left = statement() #No se si está bien. Es para poner el valor de ID en right
-      match "ID"
+      left = expression()
       result =
         type: "CALL"
         left: left
-    else if lookahead and lookahead.type is "BEGIN" #NO FUNCIONA
+    else if lookahead and lookahead.type is "BEGIN"
       match "BEGIN"
       left = statements() #Funciona sin el ultimo statements pillado no tiene ';''
       match "END"
