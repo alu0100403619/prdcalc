@@ -43,7 +43,11 @@ String::tokens = ->
     "if": "IF"
     then: "THEN"
     while: "WHILE"
-    do : "DO"
+    do: "DO"
+    call: "CALL"
+    begin: "BEGIN"
+    end: "END"
+
   
   # Make a token object.
   make = (type, value) ->
@@ -147,6 +151,21 @@ parse = (input) ->
       result =
         type: "P"
         value: right
+    else if lookahead and lookahead.type is "CALL" #NO FUNCIONA
+      match "CALL"
+      left = statement() #No se si está bien. Es para poner el valor de ID en right
+      match "ID"
+      result =
+        type: "CALL"
+        left: left
+    else if lookahead and lookahead.type is "BEGIN" #NO FUNCIONA
+      match "BEGIN"
+      left = statements() #Funciona sin el ultimo statements pillado no tiene ';''
+      match "END"
+      result =
+        type: "BEGIN"
+        left: left
+        right: right      
     else if lookahead and lookahead.type is "IF"
       match "IF"
       left = condition()
@@ -156,25 +175,6 @@ parse = (input) ->
         type: "IF"
         left: left
         right: right
-    else if lookahead and lookahead.type is "CALL" #NO FUNCIONA
-      match "CALL"
-      left = statement() #No se si está bien. Es para poner el valor de ID en right
-      match "ID"
-      right = ""
-      result =
-        type: "CALL"
-        left: left
-        right: right 
-    else if lookahead and lookahead.type is "BEGIN" #NO FUNCIONA
-      match "BEGIN"
-      left = statement()
-      match ";"
-      match "end"
-      right = ""
-      result =
-        type: "BEGIN"
-        right: right
-        left: left
     else if lookahead and lookahead.type is "WHILE"
       match "WHILE"
       left = condition()
