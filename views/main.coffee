@@ -43,6 +43,7 @@ String::tokens = ->
     "if": "IF"
     then: "THEN"
     while: "WHILE"
+    do : "DO"
   
   # Make a token object.
   make = (type, value) ->
@@ -172,13 +173,13 @@ parse = (input) ->
         right: right
     else if lookahead and lookahead.type is "WHILE"
       match "WHILE"
-      right = condition()
-      match "do"
-      left = statement()
+      left = condition()
+      match "DO"
+      right = statement()
       result =
         type: "WHILE"
-        right: right
-        left: left        
+        left: left
+        right: right     
     else # Error!
       throw "Syntax Error. Expected identifier but found " +
         (if lookahead then lookahead.value else "end of input") +
