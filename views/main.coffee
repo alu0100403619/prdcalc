@@ -158,19 +158,23 @@ parse = (input) ->
         right: right
     else if lookahead and lookahead.type is "CALL" #NO FUNCIONA
       match "CALL"
-      right = statement() #No se si está bien. Es para poner el valor de ID en right
+      left = statement() #No se si está bien. Es para poner el valor de ID en right
       match "ID"
+      right = ""
       result =
         type: "CALL"
+        left: left
         right: right 
     else if lookahead and lookahead.type is "BEGIN" #NO FUNCIONA
       match "BEGIN"
-      right = statement()
+      left = statement()
       match ";"
       match "end"
+      right = ""
       result =
         type: "BEGIN"
         right: right
+        left: left
     else if lookahead and lookahead.type is "WHILE"
       match "WHILE"
       left = condition()
