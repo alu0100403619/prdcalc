@@ -14,9 +14,6 @@ Analizador Descendente Predictivo Recursivo en JavaScript
 Practica de Analizador Descendente Predictivo Recursivo en JavaScript, es la cuarta práctica de la asignatura de procesadores del lenguaje
 
 Comprueba su funcionamiento en 
-[Pdrcalc en Heroku Jorge](https://drive.google.com/folderview?id=0ByNr-nNEgfHRMDBmRKJNNlf2c00&usp=sharing)
-
-Comprueba su funcionamiento en 
-[Pdrcalc en Heroku Gonzalo](http://prdcalc.herokuapp.com/)
+(http://prdcalc.herokuapp.com/)
 
 Fecha: 14/03/2014

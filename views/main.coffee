@@ -1,13 +1,13 @@
-main = ()-> 
+main = ()->
   source = original.value
-  try 
+  try
     result = JSON.stringify(parse(source), null, 2)
   catch result
     result = """<div class="error">#{result}</div>"""
 
   OUTPUT.innerHTML = result
 
-window.onload = ()-> 
+window.onload = ()->
   PARSE.onclick = main
 
 Object.constructor::error = (message, t) ->
@@ -19,7 +19,7 @@ Object.constructor::error = (message, t) ->
 RegExp::bexec = (str) ->
   i = @lastIndex
   m = @exec(str)
-  return m  if m and m.index is i
+  return m if m and m.index is i
   null
 
 String::tokens = ->
@@ -28,27 +28,20 @@ String::tokens = ->
   n = undefined # The number value.
   m = undefined # Matching
   result = [] # An array to hold the results.
-  WHITES = /\s+/g
-  ID = /[a-zA-Z_]\w*/g
-  NUM = /\b\d+(\.\d*)?([eE][+-]?\d+)?\b/g
-  STRING = /('(\\.|[^'])*'|"(\\.|[^"])*")/g
-  ONELINECOMMENT = /\/\/.*/g
-  MULTIPLELINECOMMENT = /\/[*](.|\n)*?[*]\//g
-  ONECHAROPERATORS = /([-+*\/=()&|;:,<>{}[\]])/g
-  COMPARISSON = /if\s*\(.*\)\s*then/ig #CREAR LA REGEXP
-  tokens = [
-    WHITES
-    ID
-    NUM
-    STRING
-    ONELINECOMMENT
-    MULTIPLELINECOMMENT
-    ONECHAROPERATORS
-    COMPARISSON
-  ]
-  RESERVED_WORD = p: "P"
-				  if: "if"
-				  then: "then"
+  tokens =
+    WHITES: /\s+/g
+    ID: /[a-zA-Z_]\w*/g
+    NUM: /\b\d+(\.\d*)?([eE][+-]?\d+)?\b/g
+    STRING: /('(\\.|[^'])*'|"(\\.|[^"])*")/g
+    ONELINECOMMENT: /\/\/.*/g
+    MULTIPLELINECOMMENT: /\/[*](.|\n)*?[*]\//g
+    COMPARISONOPERATOR: /[<>=!]=|[<>]/g
+    ONECHAROPERATORS: /([-+*\/=()&|;:,{}[\]])/g
+
+  RESERVED_WORD =
+    p: "P"
+    "if": "IF"
+    then: "THEN"
   
   # Make a token object.
   make = (type, value) ->
@@ -64,24 +57,23 @@ String::tokens = ->
 
   
   # Begin tokenization. If the source string is empty, return nothing.
-  return  unless this
+  return unless this
   
   # Loop through this text
   while i < @length
-    tokens.forEach (t) -> # Only ECMAScript5
-      t.lastIndex = i
-      return
+    for key, value of tokens
+      value.lastIndex = i
 
     from = i
     
     # Ignore whitespace and comments
-    if m = WHITES.bexec(this) or 
-           (m = ONELINECOMMENT.bexec(this)) or 
-           (m = MULTIPLELINECOMMENT.bexec(this))
+    if m = tokens.WHITES.bexec(this) or
+           (m = tokens.ONELINECOMMENT.bexec(this)) or
+           (m = tokens.MULTIPLELINECOMMENT.bexec(this))
       getTok()
     
     # name.
-    else if m = ID.bexec(this)
+    else if m = tokens.ID.bexec(this)
       rw = RESERVED_WORD[m[0]]
       if rw
         result.push make(rw, getTok())
@@ -89,7 +81,7 @@ String::tokens = ->
         result.push make("ID", getTok())
     
     # number.
-    else if m = NUM.bexec(this)
+    else if m = tokens.NUM.bexec(this)
       n = +getTok()
       if isFinite(n)
         result.push make("NUM", n)
@@ -97,16 +89,19 @@ String::tokens = ->
         make("NUM", m[0]).error "Bad number"
     
     # string
-    else if m = STRING.bexec(this)
-      result.push make("STRING", 
-                        getTok().replace(/^["']|["']$/g, ""))
+    else if m = tokens.STRING.bexec(this)
+      result.push make("STRING", getTok().replace(/^["']|["']$/g, ""))
     
+    # comparison operator
+    else if m = tokens.COMPARISONOPERATOR.bexec(this)
+      result.push make("COMPARISON", getTok())
     # single-character operator
-    else if m = ONECHAROPERATORS.bexec(this)
+    else if m = tokens.ONECHAROPERATORS.bexec(this)
       result.push make(m[0], getTok())
     else
       throw "Syntax error near '#{@substr(i)}'"
   result
+
 
 parse = (input) ->
   tokens = input.tokens()
@@ -114,10 +109,10 @@ parse = (input) ->
   match = (t) ->
     if lookahead.type is t
       lookahead = tokens.shift()
-      lookahead = null  if typeof lookahead is "undefined"
+      lookahead = null if typeof lookahead is "undefined"
     else # Error. Throw exception
-      throw "Syntax Error. Expected #{t} found '" + 
-            lookahead.value + "' near '" + 
+      throw "Syntax Error. Expected #{t} found '" +
+            lookahead.value + "' near '" +
             input.substr(lookahead.from) + "'"
     return
 
@@ -129,8 +124,6 @@ parse = (input) ->
       result.push statement()
     (if result.length is 1 then result[0] else result)
 
-  #BLOCK-------------------------------------------------------------
-  
   #STATEMENT-------------------------------------------------------------
   statement = ->
     result = null
@@ -152,96 +145,55 @@ parse = (input) ->
       result =
         type: "P"
         value: right
-    else if lookahead and lookahead.type is "call"  #NO FUNCIONA
-      match "call"
+    else if lookahead and lookahead.type is "IF"
+      match "IF"
+      left = condition()
+      match "THEN"
+      right = statement()
+      result =
+        type: "IF"
+        left: left
+        right: right
+    else if lookahead and lookahead.type is "CALL" #NO FUNCIONA
+      match "CALL"
       right = statement() #No se si está bien. Es para poner el valor de ID en right
       match "ID"
-      result = 
-        type: "call"
-        right: right
-    else if lookahead and lookahead.type is "begin"  #NO FUNCIONA
-      match "begin"
+      result =
+        type: "CALL"
+        right: right 
+    else if lookahead and lookahead.type is "BEGIN" #NO FUNCIONA
+      match "BEGIN"
       right = statement()
       match ";"
       match "end"
-      result = 
-        type: "begin"
+      result =
+        type: "BEGIN"
         right: right
-    else if lookahead and lookahead.type is "if" #ARREGLADO
-      match "if"
-      right = condition()
-      match "then"
-      left = statement()
-      result = 
-        type: "if"
-        right: right
-        left: left
-    else if lookahead and lookahead.type is "while"
-      match "while"
+    else if lookahead and lookahead.type is "WHILE"
+      match "WHILE"
       right = condition()
       match "do"
       left = statement()
-      result = 
-        type: "while"
+      result =
+        type: "WHILE"
         right: right
-        left: left
+        left: left        
     else # Error!
-      throw "Syntax Error. Expected identifier but found " + 
-        (if lookahead then lookahead.value else "end of input") + 
+      throw "Syntax Error. Expected identifier but found " +
+        (if lookahead then lookahead.value else "end of input") +
         " near '#{input.substr(lookahead.from)}'"
     result
 
-  #CONDITION-------------------------------------------------------------
+  #CONDITION--------------------------------------------------------------
   condition = ->
-    result = expression() #NO FUNCIONA
-    if lookahead and lookahead.type is "odd"
-      match "odd"
-      right = expression()
-      result =
-        type: "odd"
-        value: right
-    if lookahead and lookahead.type is "="
-      match "="
-      right = expression()
-      result =
-        type: "="
-        left: result
-        right: right
-    if lookahead and lookahead.type is "#"
-      match "#"
-      right = expression()
-      result =
-        type: "#"
-        left: result
-        right: right
-    if lookahead and lookahead.type is "<"
-      match "<"
-      right = expression()
-      result =
-        type: "<"
-        left: result
-        right: right
-    if lookahead and lookahead.type is "<="
-      match "<="
-      right = expression()
-      result =
-        type: "<="
-        left: result
-        right: right
-    if lookahead and lookahead.type is ">"
-      match ">"
-      right = expression()
-      result =
-        type: ">"
-        left: result
-        right: right
-    if lookahead and lookahead.type is ">="
-      match ">="
-      right = expression()
-      result =
-        type: ">="
-        left: result
-        right: right
+    left = expression()
+    type = lookahead.value
+    match "COMPARISON"
+    right = expression()
+    result =
+      type: type
+      left: left
+      right: right
     result
 
   #EXPRESSION-------------------------------------------------------------
@@ -260,10 +212,10 @@ parse = (input) ->
       result =
         type: "-"
         left: result
-        right: right
+        right: right       
     result
 
-  #TERM-------------------------------------------------------------
+  #TERM-----------------------------------------------------------------
   term = ->
     result = factor()
     if lookahead and lookahead.type is "*"
@@ -279,10 +231,10 @@ parse = (input) ->
       result =
         type: "/"
         left: result
-        right: right
+        right: right        
     result
 
-  #FACTOR-------------------------------------------------------------
+  #FACTOR---------------------------------------------------------------
   factor = ->
     result = null
     if lookahead.type is "NUM"
@@ -297,19 +249,19 @@ parse = (input) ->
         value: lookahead.value
 
       match "ID"
-    else if lookahead.type is "(" #NO FUNCIONA (3*5) pero si a = (3*5)
+    else if lookahead.type is "("
       match "("
       result = expression()
       match ")"
     else # Throw exception
-      throw "Syntax Error. Expected number or identifier or '(' but found " + 
-        (if lookahead then lookahead.value else "end of input") + 
+      throw "Syntax Error. Expected number or identifier or '(' but found " +
+        (if lookahead then lookahead.value else "end of input") +
         " near '" + input.substr(lookahead.from) + "'"
     result
 
   tree = statements(input)
   if lookahead?
-    throw "Syntax Error parsing statements. " + 
-      "Expected 'end of input' and found '" + 
-      input.substr(lookahead.from) + "'"  
+    throw "Syntax Error parsing statements. " +
+      "Expected 'end of input' and found '" +
+      input.substr(lookahead.from) + "'"
   tree
