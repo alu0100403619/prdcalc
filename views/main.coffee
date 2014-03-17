@@ -160,9 +160,27 @@ parse = (input) ->
       match "NUM"
       result =
         type: "CONST"
-        left: left
-        right: right
-    else result = [statement()]
+        left: result
+        right: right        
+
+      while lookahead and lookahead.type is ","
+        match ","
+        left =
+          type: "ID"
+          value: lookahead.value
+        match "ID"
+        match "="
+        right =
+          type: "NUM"
+          value: lookahead.value
+        match "NUM"
+        result =
+          type: "CONST"
+          left: result
+          right: right   
+
+    else 
+      result = [statement()]
     result      
 
   #STATEMENT-------------------------------------------------------------
