@@ -49,6 +49,7 @@ String::tokens = ->
     call: "CALL"
     begin: "BEGIN"
     end: "END"
+    const: "CONST"
 
   
   # Make a token object.
@@ -133,6 +134,16 @@ parse = (input) ->
             input.substr(lookahead.from) + "'"
     return
 
+  #BLOCKS-----------------------------------------------------------------
+  block = ->
+    result = null
+    if lookahead and lookahead.type is "CONST"
+      match "CONST"
+      left = lookahead.value
+      result =
+        type: "CONST"
+        left: left
+
   #STATEMENTS-------------------------------------------------------------
   statements = ->
     result = [statement()]
@@ -163,10 +174,10 @@ parse = (input) ->
         value: right
     else if lookahead and lookahead.type is "CALL"
       match "CALL"
-      left = expression()
       result =
-        type: "CALL"
-        left: left
+        type: "ID"
+        value: lookahead.value
+      match "ID"
     else if lookahead and lookahead.type is "BEGIN"
       match "BEGIN"
       left = statements() #Funciona sin el ultimo statements pillado no tiene ';''
