@@ -38,6 +38,7 @@ String::tokens = ->
     COMPARISONOPERATOR: /[<>=!]=|[<>]/g
     ONECHAROPERATORS: /([-+*\/=()&|;:,{}[\]])/g
     ADDOP: /([+-])/g
+    MULTOP: /[*\/]/g
 
   RESERVED_WORD =
     p: "P"
@@ -107,6 +108,10 @@ String::tokens = ->
     else if m = tokens.ADDOP.bexec(this)
       result.push make("ADDOP", getTok())
 
+    # MULTOP operator
+    else if m = tokens.MULTOP.bexec(this)
+      result.push make("MULTOP", getTok())
+      
     # single-character operator
     else if m = tokens.ONECHAROPERATORS.bexec(this)
       result.push make(m[0], getTok())
@@ -222,20 +227,14 @@ parse = (input) ->
   #TERM-----------------------------------------------------------------
   term = ->
     result = factor()
-    if lookahead and lookahead.type is "*"
-      match "*"
-      right = term()
+    while lookahead and lookahead.type is "MULTOP"
+      type = lookahead.value
+      match "MULTOP"
+      right = factor()
       result =
-        type: "*"
+        type: type
         left: result
         right: right
-    if lookahead and lookahead.type is "/"
-      match "/"
-      right = term()
-      result =
-        type: "/"
-        left: result
-        right: right        
     result
 
   #FACTOR---------------------------------------------------------------
