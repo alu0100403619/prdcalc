@@ -5,6 +5,8 @@ p This website contains a simple example of a predictive parser
     | Load example to parse
   div
     textarea#original[autofocus cols="80" rows="5"]
+    br
+    input#PARSE.mylink[value="--> parse <--" type="button"]
   br
   div
     .loadfile
@@ -15,10 +17,12 @@ p This website contains a simple example of a predictive parser
       button#example3[type="button" onclick="dump('/examples/exampleif.txt');"]
         | example if
       button#example4[type="button" onclick="dump('/examples/examplewhile.txt');"]
-        | example while        
+        | example while      
+      button#example4[type="button" onclick="dump('/examples/examplecall.txt');"]
+        | example call   
       button#exampleerr[type="button" onclick="dump('/examples/example_err.txt');"]
         | example_err
-      input#files type="file" 
+      input#files type="file"
 
     javascript:
         function dump(fileName) {
@@ -41,6 +45,5 @@ p This website contains a simple example of a predictive parser
             else { alert("Failed to load file"); }
         }
 
-
-input#PARSE.mylink[value="parse" type="button"]
+br
 pre#OUTPUT

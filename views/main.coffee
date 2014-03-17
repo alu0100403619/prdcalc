@@ -139,10 +139,10 @@ parse = (input) ->
     result = null
     if lookahead and lookahead.type is "CONST"
       match "CONST"
-      left = lookahead.value
       result =
-        type: "CONST"
-        left: left
+        type: "ID"
+        value: lookahead.value
+      match "ID"
 
   #STATEMENTS-------------------------------------------------------------
   statements = ->
@@ -175,7 +175,7 @@ parse = (input) ->
     else if lookahead and lookahead.type is "CALL"
       match "CALL"
       result =
-        type: "ID"
+        type: "CALL"
         value: lookahead.value
       match "ID"
     else if lookahead and lookahead.type is "BEGIN"
