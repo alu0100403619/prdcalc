@@ -44,12 +44,14 @@ String::tokens = ->
     p: "P"
     "if": "IF"
     then: "THEN"
-    while: "WHILE"
-    do: "DO"
+    "while": "WHILE"
+    "do": "DO"
     call: "CALL"
     begin: "BEGIN"
     end: "END"
-    const: "CONST"
+    "const": "CONST"
+    "var": "VAR"
+    procedure: "PROCEDURE"
 
   
   # Make a token object.
@@ -134,28 +136,39 @@ parse = (input) ->
             input.substr(lookahead.from) + "'"
     return
 
-  #BLOCKS-----------------------------------------------------------------
-  block = ->
-    result = null
-    if lookahead and lookahead.type is "CONST"
-      match "CONST"
-      result =
-        type: "ID"
-        value: lookahead.value
-      match "ID"
-
   #STATEMENTS-------------------------------------------------------------
   statements = ->
-    result = [statement()]
+    result = [block()]
     while lookahead and lookahead.type is ";"
       match ";"
       result.push statement()
     (if result.length is 1 then result[0] else result)
 
+  #BLOCK------------------------------------------------------------------
+  block = ->
+    result = null
+    if lookahead and lookahead.type is "CONST"
+      match "CONST"
+      left =
+        type: "ID"
+        value: lookahead.value
+      match "ID"
+      match "="
+      right =
+        type: "NUM"
+        value: lookahead.value
+      match "NUM"
+      result =
+        type: "CONST"
+        left: left
+        right: right
+    else result = [statement()]
+    result      
+
   #STATEMENT-------------------------------------------------------------
   statement = ->
     result = null
-    if lookahead and lookahead.type is "ID"
+    if lookahead and lookahead.type is "ID" 
       left =
         type: "ID"
         value: lookahead.value
@@ -180,7 +193,7 @@ parse = (input) ->
       match "ID"
     else if lookahead and lookahead.type is "BEGIN"
       match "BEGIN"
-      left = statements() #Funciona sin el ultimo statements pillado no tiene ';''
+      left = statements() #Funciona sin el último statements pillado no tiene ';''
       match "END"
       result =
         type: "BEGIN"
@@ -203,7 +216,7 @@ parse = (input) ->
       result =
         type: "WHILE"
         left: left
-        right: right     
+        right: right
     else # Error!
       throw "Syntax Error. Expected identifier but found " +
         (if lookahead then lookahead.value else "end of input") +
