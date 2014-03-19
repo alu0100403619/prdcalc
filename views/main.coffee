@@ -141,7 +141,7 @@ parse = (input) ->
     result = [block()]
     while lookahead and lookahead.type is ";"
       match ";"
-      result.push statement()
+      result.push block()
     (if result.length is 1 then result[0] else result)
 
   #BLOCK------------------------------------------------------------------
@@ -163,11 +163,22 @@ parse = (input) ->
           value: lookahead.value
         match "NUM"
         result =
+          type: "CONST"
           left: left
-          right: right
-        
+          right: right   
         result
-    else
+    else if lookahead and lookahead.type is "VAR"    
+      while lookahead and (lookahead.type is "VAR" or lookahead.type is ",")
+        if lookahead.type is "VAR"
+          match "VAR"
+        else if lookahead.type is ","
+          match ","
+        result =
+          type: "VAR"
+          value: lookahead.value
+        match "ID"
+        result
+    else      
       result = [statement()]
 
   #STATEMENT-------------------------------------------------------------
