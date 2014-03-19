@@ -178,6 +178,19 @@ parse = (input) ->
           value: lookahead.value
         match "ID"
         result
+    else if lookahead and lookahead.type is "PROCEDURE"    
+      match "PROCEDURE"
+      left = lookahead.value
+      match ";"
+      right = block()
+      match ";"
+      result1 =
+        left = left
+        right = right
+      result
+        left = result1
+        right = statement()
+      result           
     else      
       result = [statement()]
 
