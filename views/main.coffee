@@ -147,24 +147,12 @@ parse = (input) ->
   #BLOCK------------------------------------------------------------------
   block = ->
     result = null
-    if lookahead and lookahead.type is "CONST"
-      match "CONST"
-      left =
-        type: "ID"
-        value: lookahead.value
-      match "ID"
-      match "="
-      right =
-        type: "NUM"
-        value: lookahead.value
-      match "NUM"
-      result =
-        type: "CONST"
-        left: result
-        right: right        
-
-      while lookahead and lookahead.type is ","
-        match ","
+    if lookahead and lookahead.type is "CONST"    
+      while lookahead and (lookahead.type is "CONST" or lookahead.type is ",")
+        if lookahead.type is "CONST"
+          match "CONST"
+        else if lookahead.type is ","
+          match ","
         left =
           type: "ID"
           value: lookahead.value
@@ -175,18 +163,17 @@ parse = (input) ->
           value: lookahead.value
         match "NUM"
         result =
-          type: "CONST"
-          left: result
-          right: right   
-
-    else 
+          left: left
+          right: right
+        
+        result
+    else
       result = [statement()]
-    result      
 
   #STATEMENT-------------------------------------------------------------
   statement = ->
     result = null
-    if lookahead and lookahead.type is "ID" 
+    if lookahead and lookahead.type is "ID"
       left =
         type: "ID"
         value: lookahead.value
@@ -216,7 +203,7 @@ parse = (input) ->
       result =
         type: "BEGIN"
         left: left
-        right: right      
+        right: right
     else if lookahead and lookahead.type is "IF"
       match "IF"
       left = condition()
