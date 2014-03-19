@@ -41,6 +41,10 @@ get '/grammar' do
   slim :grammar
 end
 
+get '/tests' do
+  slim :indexTests
+end
+
 not_found do
   slim :not_found
 end
