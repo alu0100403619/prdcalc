@@ -185,12 +185,12 @@ parse = (input) ->
       right = block()
       match ";"
       result1 =
-        left = left
-        right = right
+        left: left
+        right: right
       result
-        left = result1
-        right = statement()
-      result           
+        left: result1
+        right: statement()
+      result       
     else      
       result = [statement()]
 
