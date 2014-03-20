@@ -49,6 +49,7 @@ nav {
   @include tabs ($background: transparent, $color: $white);
   font-weight: bold;
   background-image: url('/images/gato.jpg');
+  background-size: contain;
 }
 
 p {
