@@ -31,6 +31,17 @@ suite('Analizador Descendente Recursivo Predictivo', function() {
 		 main ();
        assert.deepEqual(OUTPUT.innerHTML, esperado);
     });
+	 test('call: ', function() {
+		 original.value =  "call function_fi";
+		 var esperado = '[\n  {\n    "type": "CALL",\n    "value": "function_fi"\n  }\n]';
+		 main ();
+       assert.deepEqual(OUTPUT.innerHTML, esperado);
+    });
+	 test('Block: ', function() { //NO FUNCIONA BIEN
+		 original.value =  "const a=1, b=2, c=3; procedure function ; var a; begin a = 4*2; b = 2*(a+1); p b end";
+		 main ();
+       assert.match(OUTPUT.innerHTML, /Error/);
+    });
 	 test('Error: ', function() {
 		 original.value =  "a = 3 + (4; b = 5";
 		 main ();
