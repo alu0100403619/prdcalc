@@ -138,118 +138,142 @@ parse = (input) ->
 
   #STATEMENTS-------------------------------------------------------------
   statements = ->
-    result = [block()]
+    result = [program()]
     while lookahead and lookahead.type is ";"
       match ";"
-      result.push block()
+      result.push program()
     (if result.length is 1 then result[0] else result)
+
+  #PROGRAM
+  program = ->   
+    if lookahead and lookahead.type is "." 
+      match "."
+    else
+      result = block()  
+    result    
 
   #BLOCK------------------------------------------------------------------
   block = ->
     result = null
-    if lookahead and lookahead.type is "CONST"    
-      while lookahead and (lookahead.type is "CONST" or lookahead.type is ",")
-        if lookahead.type is "CONST"
-          match "CONST"
-        else if lookahead.type is ","
-          match ","
-        left =
-          type: "ID"
-          value: lookahead.value
-        match "ID"
-        match "="
-        right =
-          type: "NUM"
-          value: lookahead.value
-        match "NUM"
-        result =
-          type: "CONST"
-          left: left
-          right: right   
-        result
-    else if lookahead and lookahead.type is "VAR"    
-      while lookahead and (lookahead.type is "VAR" or lookahead.type is ",")
-        if lookahead.type is "VAR"
-          match "VAR"
-        else if lookahead.type is ","
-          match ","
-        result =
-          type: "VAR"
-          value: lookahead.value
-        match "ID"
-        result
-    else if lookahead and lookahead.type is "PROCEDURE"    
-      match "PROCEDURE"
-      left = lookahead.value
-      match ";"
-      right = block()
-      match ";"
-      result1 =
-        left: left
-        right: right
-      result
-        left: result1
-        right: statement()
-      result       
-    else      
-      result = [statement()]
+    if lookahead 
+      switch lookahead.type
+
+        when "CONST"    
+          while lookahead and (lookahead.type is "CONST" or lookahead.type is ",")
+            if lookahead.type is "CONST"
+              match "CONST"
+            else if lookahead.type is ","
+              match ","
+            left =
+              type: "ID"
+              value: lookahead.value
+            match "ID"
+            match "="
+            right =
+              type: "NUM"
+              value: lookahead.value
+            match "NUM"
+            result =
+              type: "CONST"
+              left: left
+              right: right   
+            result
+
+        when "VAR" 
+          while lookahead and (lookahead.type is "VAR" or lookahead.type is ",")
+            if lookahead.type is "VAR"
+              match "VAR"
+            else if lookahead.type is ","
+              match ","
+            result =
+              type: "VAR"
+              value: lookahead.value
+            match "ID"
+            result
+
+        when "PROCEDURE"    
+          match "PROCEDURE"
+          left = lookahead.value
+          match "ID"
+          match ";"
+          right = block()
+          match ";"
+          result1 =
+            left: left
+            right: right
+          result =
+            left: result1
+            right: statements()
+          result
+
+        else      
+          result = [statement()]
 
   #STATEMENT-------------------------------------------------------------
   statement = ->
     result = null
-    if lookahead and lookahead.type is "ID"
-      left =
-        type: "ID"
-        value: lookahead.value
-      match "ID"
-      match "="
-      right = expression()
-      result =
-        type: "="
-        left: left
-        right: right
-    else if lookahead and lookahead.type is "P"
-      match "P"
-      right = expression()
-      result =
-        type: "P"
-        value: right
-    else if lookahead and lookahead.type is "CALL"
-      match "CALL"
-      result =
-        type: "CALL"
-        value: lookahead.value
-      match "ID"
-    else if lookahead and lookahead.type is "BEGIN"
-      match "BEGIN"
-      left = statements() #Funciona sin el último statements pillado no tiene ';''
-      match "END"
-      result =
-        type: "BEGIN"
-        left: left
-        right: right
-    else if lookahead and lookahead.type is "IF"
-      match "IF"
-      left = condition()
-      match "THEN"
-      right = statement()
-      result =
-        type: "IF"
-        left: left
-        right: right
-    else if lookahead and lookahead.type is "WHILE"
-      match "WHILE"
-      left = condition()
-      match "DO"
-      right = statement()
-      result =
-        type: "WHILE"
-        left: left
-        right: right
-    else # Error!
-      throw "Syntax Error. Expected identifier but found " +
-        (if lookahead then lookahead.value else "end of input") +
-        " near '#{input.substr(lookahead.from)}'"
+    if lookahead 
+      switch lookahead.type
+
+        when "ID"
+          left =
+            type: "ID"
+            value: lookahead.value
+          match "ID"
+          match "="
+          right = expression()
+          result =
+            type: "="
+            left: left
+            right: right
+
+        when "P"
+          match "P"
+          right = expression()
+          result =
+            type: "P"
+            value: right
+
+        when "CALL"
+          match "CALL"
+          result =
+            type: "CALL"
+            value: lookahead.value
+          match "ID"
+
+        when "BEGIN"
+          match "BEGIN"
+          left = statements() #Funciona sin el último statements pillado no tiene ';''
+          match "END"
+          result =
+            type: "BEGIN"
+            left: left
+            right: right
+
+        when "IF"
+          match "IF"
+          left = condition()
+          match "THEN"
+          right = statement()
+          result =
+            type: "IF"
+            left: left
+            right: right
+
+        when "WHILE"
+          match "WHILE"
+          left = condition()
+          match "DO"
+          right = statement()
+          result =
+            type: "WHILE"
+            left: left
+            right: right
+
+        else # Error!
+          throw "Syntax Error. Expected identifier but found " +
+            (if lookahead then lookahead.value else "end of input") +
+            " near '#{input.substr(lookahead.from)}'"
     result
 
   #CONDITION--------------------------------------------------------------
@@ -293,28 +317,32 @@ parse = (input) ->
   #FACTOR---------------------------------------------------------------
   factor = ->
     result = null
-    if lookahead.type is "NUM"
-      result =
-        type: "NUM"
-        value: lookahead.value
+    switch lookahead.type
+     
+      when "NUM"
+        result =
+          type: "NUM"
+          value: lookahead.value
+        match "NUM"
 
-      match "NUM"
-    else if lookahead.type is "ID"
-      result =
-        type: "ID"
-        value: lookahead.value
+      when "ID"
+        result =
+          type: "ID"
+          value: lookahead.value
+        match "ID"
 
-      match "ID"
-    else if lookahead.type is "(" #NO FUNCIONA (3*5) pero si a = (3*5)
-      match "("
-      result = expression()
-      match ")"
-    else # Throw exception
-      throw "Syntax Error. Expected number or identifier or '(' but found " +
-        (if lookahead then lookahead.value else "end of input") +
-        " near '" + input.substr(lookahead.from) + "'"
+      when "(" #NO FUNCIONA (3*5) pero si a = (3*5)
+        match "("
+        result = expression()
+        match ")"
+
+      else # Throw exception
+        throw "Syntax Error. Expected number or identifier or '(' but found " +
+          (if lookahead then lookahead.value else "end of input") +
+          " near '" + input.substr(lookahead.from) + "'"
     result
 
+  #END------------------------------------------------------------------
   tree = statements(input)
   if lookahead?
     throw "Syntax Error parsing statements. " +
