@@ -1,0 +1,7 @@
+const a=1, b=2, c=3;
+procedure function ; var a;
+begin
+a = 4*2;
+b = 2*(a+1);
+p b
+end
